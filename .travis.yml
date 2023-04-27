@@ -1,0 +1,23 @@
+language: generic
+
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t kdh/docker-fullstack-app -f ./frontend/Dockerfile.dev ./frontend
+
+script:
+  - docker run -e CI=true kdh/docker-fullstack-app npm run test
+
+after_success:
+  - docker build -t kdh/docker-frontend ./frontend
+  - docker build -t kdh/docker-backend ./backend
+  - docker build -t kdh/docker-nginx ./nginx
+
+  - echo "$DOCKER_HUB_PASSWORD | docker login -u "$DOCKER_HUB_ID" --password-stdin
+
+  - docker push kdh/docker-frontend
+  - docker push kdh/docker-backend
+  - docker push kdh/docker-nginx
